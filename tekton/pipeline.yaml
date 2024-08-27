@@ -21,7 +21,7 @@ spec:
       runAfter:
         - clone-repo
       taskRef:
-        name: build-clickhouse-task
+        name: build-clickhouse
       workspaces:
         - name: source
           workspace: shared-workspace
