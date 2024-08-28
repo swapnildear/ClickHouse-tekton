@@ -9,7 +9,7 @@ spec:
     - name: repository-url
       value: https://github.com/swapnildear/ClickHouse-tekton.git
     - name: revision
-      value: main
+      value: master
   workspaces:
     - name: shared-workspace
       emptyDir: {}  # Using emptyDir for simplicity; use PVC in production

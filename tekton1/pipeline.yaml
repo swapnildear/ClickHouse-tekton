@@ -8,7 +8,7 @@ spec:
       default: https://github.com/swapnildear/ClickHouse-tekton.git
       type: string
     - name: revision
-      default: "main"
+      default: "master"
       type: string
   workspaces:
     - name: shared-workspace

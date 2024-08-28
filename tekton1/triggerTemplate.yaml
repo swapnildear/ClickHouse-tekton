@@ -6,7 +6,7 @@ spec:
   params:
     - name: git-revision
       description: The git revision
-      default: main
+      default: master
     - name: git-repo-url
       description: The git repository URL
       default: https://github.com/swapnildear/ClickHouse-tekton.git
