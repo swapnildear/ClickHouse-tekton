@@ -1,0 +1,29 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: clickhouse-build-template
+spec:
+  params:
+    - name: git-revision
+      description: The git revision
+      default: main
+    - name: git-repo-url
+      description: The git repository URL
+      default: https://github.com/swapnildear/ClickHouse-tekton.git
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: clickhouse-build-run-
+      spec:
+        pipelineRef:
+          name: clone-clickhouse-pipeline
+        params:
+          - name: repository-url
+            value: $(params.git-repo-url)
+          - name: revision
+            value: $(params.git-revision)
+        workspaces:
+          - name: shared-workspace
+            emptyDir: {}  # Using emptyDir for simplicity; use PVC in production
+

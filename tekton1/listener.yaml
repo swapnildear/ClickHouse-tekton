@@ -1,0 +1,12 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: clickhouse-build-listener
+spec:
+  serviceAccountName: tekton-triggers-admin  # Replace with your service account
+  triggers:
+    - bindings:
+        - ref: clickhouse-build-binding
+      template:
+        ref: clickhouse-build-template
+

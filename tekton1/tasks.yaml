@@ -6,13 +6,17 @@ spec:
   params:
     - name: repository-url
       type: string
+      description: The URL of the Git repository to clone
     - name: revision
       type: string
+      description: The Git revision (branch, tag, commit SHA) to checkout
       default: "main"
   workspaces:
     - name: output
+      description: The workspace where the Git repository will be cloned
   steps:
     - name: clone
-      image: "alpine/git:v2.30.2"
+      image: "alpine/git:v2.30.2"  # Git image to perform clone operation
       script: |
         git clone $(params.repository-url) $(workspaces.output.path) --branch $(params.revision)
+

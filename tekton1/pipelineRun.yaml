@@ -5,12 +5,12 @@ metadata:
 spec:
   pipelineRef:
     name: clone-clickhouse-pipeline
-  workspaces:
-    - name: shared-workspace
-      persistentVolumeClaim:
-        claimName: my-pvc  # replace with your PVC
   params:
     - name: repository-url
       value: https://github.com/swapnildear/ClickHouse-tekton.git
     - name: revision
       value: main
+  workspaces:
+    - name: shared-workspace
+      emptyDir: {}  # Using emptyDir for simplicity; use PVC in production
+

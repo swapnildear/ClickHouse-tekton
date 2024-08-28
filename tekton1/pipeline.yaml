@@ -24,3 +24,4 @@ spec:
       workspaces:
         - name: output
           workspace: shared-workspace
+
