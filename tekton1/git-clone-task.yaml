@@ -10,7 +10,7 @@ spec:
     - name: revision
       type: string
       description: The Git revision (branch, tag, commit SHA) to checkout
-      default: "main"
+      default: "master"
   workspaces:
     - name: output
       description: The workspace where the Git repository will be cloned
