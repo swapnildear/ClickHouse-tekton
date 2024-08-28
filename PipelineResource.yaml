@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineResource
+metadata:
+  name: clickhouse-git-repo
+spec:
+  type: git
+  params:
+    - name: url
+      value: https://github.com/swapnildear/ClickHouse-tekton.git
+    - name: revision
+      value: main  # or specify any other branch
+
