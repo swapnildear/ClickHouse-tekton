@@ -22,7 +22,10 @@ spec:
     - name: build
       image: ubuntu:20.04
       script: |
-        # Install required packages
+        # Set DEBIAN_FRONTEND to noninteractive
+        export DEBIAN_FRONTEND=noninteractive
+        
+        # Install required packages without interactive prompts
         apt-get update
         apt-get install -y git cmake ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg
         
