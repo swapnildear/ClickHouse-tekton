@@ -25,9 +25,9 @@ spec:
         # Set DEBIAN_FRONTEND to noninteractive
         export DEBIAN_FRONTEND=noninteractive
         
-        # Install required packages without interactive prompts
+        # Install required packages, including curl
         apt-get update
-        apt-get install -y git cmake ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg
+        apt-get install -y git cmake ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg curl
         
         # Install LLVM
         wget -O - https://apt.llvm.org/llvm.sh | bash
@@ -38,7 +38,11 @@ spec:
         
         # Install and configure Rust
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-        source $HOME/.cargo/env
+        
+        # Source Rust environment script
+        . $HOME/.cargo/env
+        
+        # Configure Rust toolchain and components
         rustup toolchain install nightly-2024-04-01
         rustup default nightly-2024-04-01
         rustup component add rust-src
