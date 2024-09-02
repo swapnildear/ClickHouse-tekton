@@ -24,7 +24,19 @@ spec:
     - name: build
       image: ubuntu:20.04
       script: |
-        apt-get update && apt-get install -y cmake g++ make
+        # Update and install prerequisites
+        apt-get update && apt-get install -y wget build-essential
+        
+        # Install CMake 3.20
+        wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.sh
+        mkdir /opt/cmake
+        sh cmake-3.20.0-linux-x86_64.sh --prefix=/opt/cmake --skip-license
+        ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+        
+        # Install build dependencies
+        apt-get install -y g++ make
+        
+        # Build the project
         cd $(workspaces.output.path)
         mkdir build && cd build
         cmake ..
