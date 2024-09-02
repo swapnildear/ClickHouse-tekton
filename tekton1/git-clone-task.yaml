@@ -36,8 +36,8 @@ spec:
         export CC=clang-18
         export CXX=clang++-18
         
-        # Install and configure Rust
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        # Install and configure Rust non-interactively
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         
         # Source Rust environment script
         . $HOME/.cargo/env
