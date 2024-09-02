@@ -19,25 +19,32 @@ spec:
     - name: output
       description: The workspace where the Git repository will be cloned and build artifacts will be stored
   steps:
-    - name: clone
-      image: "alpine/git:v2.30.2"
-      script: |
-        git clone $(params.repository-url) $(workspaces.output.path) --branch $(params.revision)
-      workspaces:
-        - name: output
     - name: build
-      image: clickhouse/binary-builder
+      image: ubuntu:20.04
       script: |
+        # Install required packages
+        apt-get update
+        apt-get install -y git cmake ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg
+        
+        # Install LLVM
+        wget -O - https://apt.llvm.org/llvm.sh | bash
+        
+        # Set environment variables for Clang
+        export CC=clang-18
+        export CXX=clang++-18
+        
+        # Install and configure Rust
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        source $HOME/.cargo/env
+        rustup toolchain install nightly-2024-04-01
+        rustup default nightly-2024-04-01
+        rustup component add rust-src
+        
+        # Clone the ClickHouse repository and build
+        git clone --recursive --shallow-submodules $(params.repository-url) $(workspaces.output.path)
         cd $(workspaces.output.path)
-        # Define output directory for build artifacts
-        output_dir="$(params.output-dir)"
-        # Ensure the output directory exists
-        mkdir -p "$output_dir"
-        # Run the packager script to build binaries
-        ./docker/packager/packager --package-type=binary --output-dir "$output_dir"
-        # Run the packager script to build Debian packages
-        ./docker/packager/packager --package-type=deb --output-dir "$output_dir"
-        # Override thin LTO for Debian packages to speed up the build
-        CMAKE_FLAGS='-DENABLE_THINLTO=' ./docker/packager/packager --package-type=deb --output-dir "$(workspaces.output.path)/$output_dir"
+        mkdir build
+        cmake -S . -B build
+        cmake --build build
       workspaces:
         - name: output
