@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: git-clone-task
+  name: git-clone-and-build-task
 spec:
   params:
     - name: repository-url
@@ -11,9 +11,13 @@ spec:
       type: string
       description: The Git revision (branch, tag, commit SHA) to checkout
       default: "master"
+    - name: output-dir
+      type: string
+      description: The directory for the output artifacts
+      default: "build_results"
   workspaces:
     - name: output
-      description: The workspace where the Git repository will be cloned
+      description: The workspace where the Git repository will be cloned and build artifacts will be stored
   steps:
     - name: clone
       image: "alpine/git:v2.30.2"
@@ -22,24 +26,14 @@ spec:
       workspaces:
         - name: output
     - name: build
-      image: ubuntu:20.04
+      image: clickhouse/binary-builder
       script: |
-        # Update and install prerequisites
-        apt-get update && apt-get install -y wget build-essential
-        
-        # Install CMake 3.20
-        wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.sh
-        mkdir /opt/cmake
-        sh cmake-3.20.0-linux-x86_64.sh --prefix=/opt/cmake --skip-license
-        ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-        
-        # Install build dependencies
-        apt-get install -y g++ make
-        
-        # Build the project
         cd $(workspaces.output.path)
-        mkdir build && cd build
-        cmake ..
-        make
+        # Run the packager script to build binaries
+        ./docker/packager/packager --package-type=binary --output-dir "$(params.output-dir)"
+        # Run the packager script to build Debian packages
+        ./docker/packager/packager --package-type=deb --output-dir "$(params.output-dir)"
+        # Override thin LTO for Debian packages to speed up the build
+        CMAKE_FLAGS='-DENABLE_THINLTO=' ./docker/packager/packager --package-type=deb --output-dir "$(workspaces.output.path)/$(params.output-dir)"
       workspaces:
         - name: output
