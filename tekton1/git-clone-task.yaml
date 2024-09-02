@@ -20,14 +20,20 @@ spec:
       description: The workspace where the Git repository will be cloned and build artifacts will be stored
   steps:
     - name: build
-      image: ubuntu:20.04
+      image: ubuntu:22.04.4
       script: |
-        # Set DEBIAN_FRONTEND to noninteractive
+        # Set DEBIAN_FRONTEND to noninteractive to avoid prompts
         export DEBIAN_FRONTEND=noninteractive
         
-        # Install required packages, including curl
+        # Update package list and install required packages
         apt-get update
-        apt-get install -y git cmake ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg curl
+        apt-get install -y git ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg curl
+
+        # Install the latest CMake version
+        wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add -
+        apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main'
+        apt-get update
+        apt-get install -y cmake
         
         # Install LLVM
         wget -O - https://apt.llvm.org/llvm.sh | bash
