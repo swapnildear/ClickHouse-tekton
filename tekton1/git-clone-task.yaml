@@ -22,7 +22,10 @@ spec:
     - name: build
       image: ubuntu:22.04.4
       script: |
-        # Set DEBIAN_FRONTEND to noninteractive to avoid prompts
+        # Enable debug mode
+        set -x
+        
+        # Set DEBIAN_FRONTEND to noninteractive
         export DEBIAN_FRONTEND=noninteractive
         
         # Update package list and install required packages
@@ -61,3 +64,10 @@ spec:
         cmake --build build
       workspaces:
         - name: output
+      resources:
+        requests:
+          memory: "1Gi"
+          cpu: "500m"
+        limits:
+          memory: "2Gi"
+          cpu: "1000m"
