@@ -29,11 +29,15 @@ spec:
       image: clickhouse/binary-builder
       script: |
         cd $(workspaces.output.path)
+        # Define output directory for build artifacts
+        output_dir="$(params.output-dir)"
+        # Ensure the output directory exists
+        mkdir -p "$output_dir"
         # Run the packager script to build binaries
-        ./docker/packager/packager --package-type=binary --output-dir "$(params.output-dir)"
+        ./docker/packager/packager --package-type=binary --output-dir "$output_dir"
         # Run the packager script to build Debian packages
-        ./docker/packager/packager --package-type=deb --output-dir "$(params.output-dir)"
+        ./docker/packager/packager --package-type=deb --output-dir "$output_dir"
         # Override thin LTO for Debian packages to speed up the build
-        CMAKE_FLAGS='-DENABLE_THINLTO=' ./docker/packager/packager --package-type=deb --output-dir "$(workspaces.output.path)/$(params.output-dir)"
+        CMAKE_FLAGS='-DENABLE_THINLTO=' ./docker/packager/packager --package-type=deb --output-dir "$(workspaces.output.path)/$output_dir"
       workspaces:
         - name: output
