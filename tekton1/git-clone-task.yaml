@@ -20,7 +20,7 @@ spec:
       description: The workspace where the Git repository will be cloned and build artifacts will be stored
   steps:
     - name: build
-      image: ubuntu:22.04.4
+      image: ubuntu:22.04
       script: |
         # Enable debug mode
         set -x
