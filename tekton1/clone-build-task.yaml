@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: git-clone-task
+  name: clone-build
 spec:
   params:
     - name: repository-url
@@ -19,7 +19,15 @@ spec:
     - name: output
       description: The workspace where the Git repository will be cloned and build artifacts will be stored
   steps:
-    - name: build
+    - name: clone-repo
+      image: alpine/git
+      script: |
+        # Clone the repository
+        git clone --recursive --shallow-submodules $(params.repository-url) $(workspaces.output.path)
+        cd $(workspaces.output.path)
+        git checkout $(params.revision)
+
+    - name: build-clickhouse
       image: ubuntu:22.04
       script: |
         # Enable debug mode
@@ -30,7 +38,7 @@ spec:
         
         # Update package list and install required packages
         apt-get update
-        apt-get install -y git ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg curl
+        apt-get install -y ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg curl
 
         # Install the latest CMake version
         wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add -
@@ -56,18 +64,16 @@ spec:
         rustup default nightly-2024-04-01
         rustup component add rust-src
         
-        # Clone the ClickHouse repository and build
-        git clone --recursive --shallow-submodules $(params.repository-url) $(workspaces.output.path)
+        # Build ClickHouse
         cd $(workspaces.output.path)
         mkdir build
         cmake -S . -B build
         cmake --build build
-      workspaces:
-        - name: output
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "500m"
-        limits:
-          memory: "2Gi"
-          cpu: "1000m"
+  resources:
+    requests:
+      memory: "8Gi"
+      cpu: "4000m"
+    limits:
+      memory: "16Gi"
+      cpu: "16000m"
+
