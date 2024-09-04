@@ -1,34 +1,15 @@
 apiVersion: tekton.dev/v1beta1
-kind: TaskRun
+kind: PipelineRun
 metadata:
-  name: clone-build-taskrun
+  name: clone-clickhouse-pipeline-run
 spec:
-  taskRef:
-    name: clone-build
+  pipelineRef:
+    name: clone-clickhouse-pipeline
   params:
     - name: repository-url
-      value: "https://github.com/swapnildear/ClickHouse-tekton.git"
+      value: https://github.com/swapnildear/ClickHouse-tekton.git
     - name: revision
-      value: "master"
+      value: master
   workspaces:
-    - name: output
-      persistentVolumeClaim:
-        claimName: your-pvc-name
-  podTemplate:
-    containers:
-      - name: step-clone-repo
-        resources:
-          requests:
-            memory: "8Gi"
-            cpu: "4000m"
-          limits:
-            memory: "16Gi"
-            cpu: "16000m"
-      - name: step-build-clickhouse
-        resources:
-          requests:
-            memory: "8Gi"
-            cpu: "4000m"
-          limits:
-            memory: "16Gi"
-            cpu: "16000m"
+    - name: shared-workspace
+      emptyDir: {}  # Using emptyDir for simplicity; use PVC in production
