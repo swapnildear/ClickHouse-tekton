@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: clone-build
+  name: git-clone-task
 spec:
   params:
     - name: repository-url
@@ -14,45 +14,60 @@ spec:
     - name: output-dir
       type: string
       description: The directory for the output artifacts
-      default: "output-dir"
+      default: "build_results"
   workspaces:
     - name: output
       description: The workspace where the Git repository will be cloned and build artifacts will be stored
   steps:
-    - name: clone-repo
-      image: alpine/git
-      script: |
-        # Create the output directory with appropriate permissions
-        mkdir -p $(workspaces.output.path)/$(params.output-dir) || {
-          echo "Failed to create output directory. Attempting with chmod."
-          chmod +w $(workspaces.output.path)  # Grant write permission to workspace path
-          mkdir -p $(workspaces.output.path)/$(params.output-dir)
-        }
-        # Clone the repository
-        git clone --recursive --shallow-submodules $(params.repository-url) $(workspaces.output.path)/$(params.output-dir)
-        cd $(workspaces.output.path)/$(params.output-dir)
-        git checkout $(params.revision)
-
-    - name: build-clickhouse
+    - name: build
       image: ubuntu:22.04
       script: |
+        # Enable debug mode
         set -x
+        
+        # Set DEBIAN_FRONTEND to noninteractive
         export DEBIAN_FRONTEND=noninteractive
+        
+        # Update package list and install required packages
         apt-get update
-        apt-get install -y ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg curl
+        apt-get install -y git ccache python3 ninja-build nasm yasm gawk lsb-release wget software-properties-common gnupg curl
+
+        # Install the latest CMake version
         wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key add -
         apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main'
         apt-get update
         apt-get install -y cmake
+        
+        # Install LLVM
         wget -O - https://apt.llvm.org/llvm.sh | bash
+        
+        # Set environment variables for Clang
         export CC=clang-18
         export CXX=clang++-18
+        
+        # Install and configure Rust non-interactively
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        
+        # Source Rust environment script
         . $HOME/.cargo/env
+        
+        # Configure Rust toolchain and components
         rustup toolchain install nightly-2024-04-01
         rustup default nightly-2024-04-01
         rustup component add rust-src
-        cd $(workspaces.output.path)/$(params.output-dir)
-        mkdir -p build
+        
+        # Clone the ClickHouse repository and build
+        git clone --recursive --shallow-submodules $(params.repository-url) $(workspaces.output.path)
+        cd $(workspaces.output.path)
+        mkdir build
         cmake -S . -B build
         cmake --build build
+      workspaces:
+        - name: output
+      resources:
+        requests:
+          memory: "4Gi"
+          cpu: "4000m"
+        limits:
+          memory: "8Gi"
+          cpu: "8000m"
