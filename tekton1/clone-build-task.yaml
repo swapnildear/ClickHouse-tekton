@@ -14,7 +14,7 @@ spec:
     - name: output-dir
       type: string
       description: The directory for the output artifacts
-      default: "build_results"
+      default: "output-dir"
   workspaces:
     - name: output
       description: The workspace where the Git repository will be cloned and build artifacts will be stored
