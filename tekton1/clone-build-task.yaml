@@ -22,8 +22,11 @@ spec:
     - name: clone-repo
       image: alpine/git
       script: |
-        git clone --recursive --shallow-submodules $(params.repository-url) $(workspaces.output.path)
-        cd $(workspaces.output.path)
+        # Ensure output directory exists
+        mkdir -p $(workspaces.output.path)/$(params.output-dir)
+        # Clone the repository
+        git clone --recursive --shallow-submodules $(params.repository-url) $(workspaces.output.path)/$(params.output-dir)
+        cd $(workspaces.output.path)/$(params.output-dir)
         git checkout $(params.revision)
 
     - name: build-clickhouse
@@ -45,7 +48,8 @@ spec:
         rustup toolchain install nightly-2024-04-01
         rustup default nightly-2024-04-01
         rustup component add rust-src
-        cd $(workspaces.output.path)
+        cd $(workspaces.output.path)/$(params.output-dir)
         mkdir build
         cmake -S . -B build
         cmake --build build
+
