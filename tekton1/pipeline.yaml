@@ -15,7 +15,7 @@ spec:
   tasks:
     - name: clone-repo
       taskRef:
-        name: clone-build-task
+        name: clone-build
       params:
         - name: repository-url
           value: $(params.repository-url)
